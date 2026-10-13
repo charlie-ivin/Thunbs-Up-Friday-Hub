@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administration</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/admin.css"></head><body>
+<div class="shell"><aside><div class="brand">Thumbs Up Friday<small>Administration</small></div><nav id="nav"></nav><div class="foot"><span id="who"></span><br><button id="out">Sign out</button></div></aside>
+<main><h1 id="h"></h1><div id="v"></div></main></div><div id="toast"></div>
+<script src="../assets/app.js"></script><script>
+const $=s=>document.querySelector(s),TABS=[['overview','Overview'],['sessions','Sessions'],['website','Website content']],DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+let ct,csha,st,ssha,tab='overview';
+const toast=(m,bad)=>{const t=$('#toast');t.textContent=m;t.className=bad?'bad':'';t.style.display='block';clearTimeout(t.k);t.k=setTimeout(()=>t.style.display='none',3500)};
+async function persist(msg){try{csha=await save('content.json',ct,csha,msg);toast('Saved. Live on the website in about a minute.')}catch(e){toast(e.message,1)}}
+async function setRegister(done){try{({sha:ssha}=await load('status.json'));st=done?{day:ld(new Date()),done:true,at:new Date().toISOString()}:{day:'',done:false,at:''};ssha=await save('status.json',st,ssha,done?'Register done':'Register reset');toast(done?'Register marked complete.':'Register reopened.');show()}catch(e){toast(e.message,1)}}
+function paint(){const s=state(ct,st),b=$('#sp');if(!b)return;b.className='status '+s.c;$('#st').textContent=s.t;$('#sn').textContent=s.n||fdate(new Date())}
+function table(n){return`<table><tr><th>Date</th><th>Status</th><th>Details</th><th></th></tr>${sessions(ct,n).map((s,i)=>`<tr><td>${fdate(s.d)}</td><td><span class="tag ${s.x?'x':''}">${s.x?'Cancelled':'Scheduled'}</span></td>
+ <td>${s.x?esc(s.x.reason||'No reason given'):`<input id="r${i}" placeholder="Reason, shown on the website (optional)">`}</td>
+ <td style="text-align:right;white-space:nowrap">${s.x?`<button class="b" data-u="${s.date}">Reinstate</button>`:`<button class="b d" data-c="${s.date}" data-i="${i}">Cancel session</button>`}</td></tr>`).join('')}</table>`}
+function wire(){document.querySelectorAll('[data-c]').forEach(b=>b.onclick=async()=>{ct.cancelled.push({date:b.dataset.c,reason:$('#r'+b.dataset.i).value.trim()});await persist('Cancel '+b.dataset.c);show()});
+ document.querySelectorAll('[data-u]').forEach(b=>b.onclick=async()=>{ct.cancelled=ct.cancelled.filter(x=>x.date!==b.dataset.u);await persist('Reinstate '+b.dataset.u);show()})}
+function show(){$('#h').textContent=TABS.find(t=>t[0]===tab)[1];$('#nav').innerHTML=TABS.map(t=>`<button data-t="${t[0]}" class="${t[0]===tab?'on':''}">${t[1]}</button>`).join('');
+ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;show()});const v=$('#v'),pv=location.href.replace(/admin\/.*$/,'view/');
+ if(tab==='overview'){const done=st.done&&st.day===ld(new Date());v.innerHTML=`<div class="panel"><div class="status" id="sp"><span class="dot"></span><div class="grow"><h2 id="st"></h2><p id="sn"></p></div>
+  <div class="acts">${done?'<button class="b" id="un">Reopen register</button>':'<button class="b p" id="md">Mark register done</button>'}<button class="b" id="pj">Open projector</button></div></div></div>
+  <div class="panel"><div class="ph">Upcoming sessions</div>${table(4)}</div><div class="panel"><div class="ph">Projector address</div><div class="pb mu">To show it on another computer, open <b style="color:var(--tx)">${esc(pv)}</b> in a browser. No sign-in is needed there.</div></div>`;
+  paint();$('#pj').onclick=()=>window.open(pv,'tufprojector','width=1280,height=720');($('#md')||$('#un')).onclick=()=>setRegister(!done);wire()}
+ if(tab==='sessions'){v.innerHTML=`<div class="panel"><div class="ph">Next 12 sessions</div>${table(12)}</div>`;wire()}
+ if(tab==='website'){const c=ct.club;v.innerHTML=`<div class="panel"><div class="ph">Club details</div><div class="pb fg">
+  <div><label for="cn">Club name</label><input id="cn" value="${esc(c.name)}"></div><div><label for="ct">Tagline</label><input id="ct" value="${esc(c.tagline)}"></div>
+  <div><label for="cl">Location</label><input id="cl" value="${esc(c.location)}"></div>
+  <div><label for="cd">Club day</label><select id="cd">${DAYS.map((d,i)=>`<option value="${i}" ${i==c.day?'selected':''}>${d}</option>`).join('')}</select></div>
+  <div><label for="cu">Register due by</label><input id="cu" type="time" value="${esc(c.due)}" class="sm"></div>
+  <div class="w"><label for="ca">About</label><textarea id="ca" rows="3">${esc(c.about)}</textarea></div></div></div>
+  <div class="panel"><div class="ph">Announcements<button class="b" id="aa">Add announcement</button></div><div class="pb" id="al"></div></div><button class="b p" id="sv">Save changes</button>`;
+  const al=()=>{$('#al').innerHTML=ct.announcements.map((a,i)=>`<div class="ann"><input data-a="${i}:title" placeholder="Title" value="${esc(a.title)}"><input data-a="${i}:body" placeholder="Message" value="${esc(a.body)}"><button class="b d" data-x="${i}">Delete</button></div>`).join('')||'<span class="mu">No announcements.</span>';
+   document.querySelectorAll('[data-a]').forEach(e=>e.oninput=()=>{const[i,k]=e.dataset.a.split(':');ct.announcements[i][k]=e.value});document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{ct.announcements.splice(b.dataset.x,1);al()})};al();
+  $('#aa').onclick=()=>{ct.announcements.push({title:'',body:'',date:ld(new Date())});al()};
+  $('#sv').onclick=()=>{Object.assign(ct.club,{name:$('#cn').value,tagline:$('#ct').value,location:$('#cl').value,day:+$('#cd').value,due:$('#cu').value||'08:30',about:$('#ca').value});persist('Update website content')}}}
+async function init(){if(!cfg().token)return location.replace('../login/');
+ try{({data:ct,sha:csha}=await load('content.json'));({data:st,sha:ssha}=await load('status.json'))}catch(e){return location.replace('../login/?e='+encodeURIComponent(e.message))}
+ $('#who').textContent=cfg().owner+'/'+cfg().repo;$('#out').onclick=()=>{LS.removeItem('tuftok');location.href='../login/'};show();setInterval(paint,1000)}
+init();
+</script></body></html>

@@ -1,0 +1,10 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../assets/admin.css"></head><body>
+<div class="login"><h1>Thumbs Up Friday</h1><div class="panel"><p class="mu" style="margin-top:0">Sign in with a GitHub token. It stays in this browser only and is sent only to GitHub.</p>
+<label for="o">GitHub username</label><input id="o"><label for="r">Repository name</label><input id="r"><label for="t">Access token</label><input id="t" type="password" autocomplete="off">
+<div class="err" id="e"></div><button class="b p" id="go" style="width:100%;margin-top:6px">Sign in</button></div></div>
+<script src="../assets/app.js"></script><script>
+const c=cfg();o.value=c.owner;r.value=c.repo;e.textContent=new URLSearchParams(location.search).get('e')||'';
+go.onclick=async()=>{LS.tufcfg=JSON.stringify({owner:o.value.trim(),repo:r.value.trim()});LS.tuftok=t.value.trim();go.disabled=true;e.textContent='';
+ try{await load('content.json');location.href='../admin/'}catch(x){LS.removeItem('tuftok');e.textContent=x.message;go.disabled=false}};
+</script></body></html>

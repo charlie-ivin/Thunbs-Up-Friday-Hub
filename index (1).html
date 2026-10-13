@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thumbs Up Friday</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#0d1b19;color:#fff;font-family:'Public Sans',system-ui,sans-serif;text-align:center;padding:20px;box-sizing:border-box}
+#clock{font-size:min(18vw,200px);font-weight:800;line-height:1}#date{font-size:min(4vw,36px);color:#9bb5ae;margin-bottom:20px}
+#light{width:min(20vw,180px);height:min(20vw,180px);border-radius:50%;background:#2c403c}#title{font-size:min(7vw,72px);font-weight:800}#note{font-size:min(3.5vw,30px);color:#cfe0dc;min-height:1.4em}
+.ok #light{background:#2ecc71;box-shadow:0 0 80px #2ecc71}.due #light{background:#f2c14e;box-shadow:0 0 80px #f2c14e}.late #light{background:#e5392d;box-shadow:0 0 80px #e5392d}
+.due #light,.late #light{animation:fl 1s ease-in-out infinite}@keyframes fl{50%{opacity:.25;box-shadow:none}}@media(prefers-reduced-motion:reduce){#light{animation:none!important}}</style></head>
+<body class="idle"><div id="clock"></div><div id="date"></div><div id="light"></div><div id="title"></div><div id="note"></div>
+<script src="../assets/app.js"></script><script>
+let ct=null,st={};const load2=async()=>{try{[ct,st]=await Promise.all([pub('../content.json'),pub('../status.json')])}catch(e){}};
+function draw(){const n=new Date();clock.textContent=n.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',second:'2-digit'});date.textContent=n.toLocaleDateString([],{weekday:'long',day:'numeric',month:'long'});
+ if(!ct)return;const s=state(ct,st,n);document.body.className=s.c;title.textContent=s.t;note.textContent=s.n}
+load2().then(draw);setInterval(draw,1000);setInterval(load2,20000);
+</script></body></html>

@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thumbs Up Friday</title>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{margin:0;font:17px/1.6 'Public Sans',system-ui,sans-serif;color:#1c2528;background:#f3f5f6}header{background:#17302c;color:#fff;padding:56px 24px}
+.w{max-width:720px;margin:0 auto}h1{margin:0;font-size:clamp(34px,7vw,56px);font-weight:800;line-height:1.1}header p{margin:8px 0 0;color:#a9c4bd;font-size:19px}
+main .w{padding:32px 24px}h2{font-size:20px;margin:28px 0 8px}.next{border-left:5px solid #0f6b5c;background:#fff;padding:16px 20px}.next.x{border-color:#b3261e}.next b{font-size:20px;display:block}
+.a{background:#fff;border:1px solid #d9dfe2;padding:14px 18px;margin-bottom:10px}.a b{display:block}.mu{color:#5d6b70;font-size:14px}</style></head>
+<body><header><div class="w"><h1 id="n"></h1><p id="t"></p></div></header><main><div class="w"><div id="nx" class="next"></div><h2>About</h2><p id="ab"></p><h2>Announcements</h2><div id="an"></div></div></main>
+<script src="assets/app.js"></script><script>
+pub('content.json').then(c=>{n.textContent=document.title=c.club.name;t.textContent=c.club.tagline;ab.textContent=c.club.about;
+ const s=sessions(c,1)[0];nx.className='next'+(s.x?' x':'');nx.innerHTML=`<span class="mu">Next session</span><b>${fdate(s.d)}</b>${s.x?'Cancelled'+(s.x.reason?': '+esc(s.x.reason):''):esc(c.club.location)}`;
+ an.innerHTML=[...c.announcements].reverse().map(a=>`<div class="a"><b>${esc(a.title)}</b>${esc(a.body)}<div class="mu">${esc(a.date)}</div></div>`).join('')||'<p class="mu">Nothing new right now.</p>'});
+</script></body></html>
